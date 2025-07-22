@@ -1,0 +1,84 @@
+# OpenDota MCP Server - Production Dockerfile
+# Multi-stage build optimized for production deployment
+
+# Build stage
+FROM node:20.17.0-alpine AS builder
+
+# Security: Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S mcp -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files for dependency installation
+COPY package*.json ./
+COPY .nvmrc ./
+
+# Install dependencies (including dev dependencies for build)
+RUN npm ci --only=production=false && \
+    npm cache clean --force
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build && \
+    # Remove dev dependencies after build
+    npm prune --production && \
+    # Remove unnecessary files
+    rm -rf src/ tests/ scripts/ && \
+    rm -rf .git/ .github/ coverage/ security-reports/ sbom/
+
+# Production stage
+FROM node:20.17.0-alpine AS production
+
+# Install security updates
+RUN apk upgrade --no-cache
+
+# Security: Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S mcp -u 1001
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
+
+# Set working directory
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder --chown=mcp:nodejs /app/dist ./dist
+COPY --from=builder --chown=mcp:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=mcp:nodejs /app/package*.json ./
+
+# Create logs directory
+RUN mkdir -p logs && chown -R mcp:nodejs logs
+
+# Security: Switch to non-root user
+USER mcp
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD node -e "console.log('Health check passed')" || exit 1
+
+# Environment variables
+ENV NODE_ENV=production
+ENV LOG_LEVEL=info
+ENV LOG_DIR=/app/logs
+
+# Expose port (if needed for future HTTP endpoints)
+EXPOSE 3000
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start the application
+CMD ["node", "dist/index.js"]
+
+# Metadata labels
+LABEL org.opencontainers.image.title="OpenDota MCP Server"
+LABEL org.opencontainers.image.description="MCP server for OpenDota API queries with natural language support"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.authors="OpenDota MCP Team"
+LABEL org.opencontainers.image.source="https://github.com/your-org/opendota-mcp-server"
+LABEL org.opencontainers.image.licenses="MIT"

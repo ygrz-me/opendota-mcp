@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(docker build:*)",
+      "Bash(npm install:*)",
+      "Bash(claude mcp:*)",
+      "WebFetch(domain:api.opendota.com)",
+      "Bash(ls:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run test:unit:*)",
+      "Bash(chmod:*)",
+      "Bash(./scripts/security-scan.sh:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": []
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "opendota"
+  ]
+}

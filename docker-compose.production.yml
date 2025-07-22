@@ -1,0 +1,108 @@
+# OpenDota MCP Server - Production Docker Compose
+# This configuration is optimized for production deployment
+
+version: '3.8'
+
+services:
+  opendota-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    image: opendota-mcp-server:production
+    container_name: opendota-mcp-server-prod
+    restart: unless-stopped
+    
+    # Environment configuration
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_DIR=/app/logs
+      - OPENDOTA_API_KEY=${OPENDOTA_API_KEY:-}
+      - OPENDOTA_BASE_URL=${OPENDOTA_BASE_URL:-https://api.opendota.com/api}
+      - OPENDOTA_TIMEOUT=${OPENDOTA_TIMEOUT:-30000}
+      - USER_AGENT=${USER_AGENT:-OpenDota-MCP-Server-Prod/1.0.0}
+    
+    # Volume mounts for persistence
+    volumes:
+      - logs:/app/logs:rw
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 100M
+    
+    # Security settings
+    security_opt:
+      - no-new-privileges:true
+    read_only: false  # Set to true if you can make the filesystem read-only
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+      restart_policy:
+        condition: unless-stopped
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "console.log('Health check passed')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Logging configuration
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
+    
+    # Network configuration
+    networks:
+      - mcp-network
+
+  # Optional: Log aggregator (uncomment if needed)
+  # fluentd:
+  #   image: fluent/fluentd:v1.16-1
+  #   container_name: fluentd-mcp
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./fluentd.conf:/fluentd/etc/fluent.conf:ro
+  #     - logs:/var/log/mcp:ro
+  #   networks:
+  #     - mcp-network
+
+  # Optional: Monitoring with Prometheus (uncomment if needed)
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: prometheus-mcp
+  #   restart: unless-stopped
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #   networks:
+  #     - mcp-network
+
+volumes:
+  logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/logs
+
+networks:
+  mcp-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

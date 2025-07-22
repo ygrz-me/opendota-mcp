@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Build outputs (we build inside Docker)
+dist/
+*.tsbuildinfo
+
+# Environment files (will be mounted)
+.env
+.env.local
+.env.*.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+README.md
+*.md
+
+# Logs
+logs
+*.log
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output
+
+# Yarn
+.yarn-integrity
+
+# Optional npm cache
+.npm
+
+# ESLint cache
+.eslintcache
