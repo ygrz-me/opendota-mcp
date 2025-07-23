@@ -45,9 +45,8 @@
   "devDependencies": {
     "@cyclonedx/cdxgen": "^11.4.4",
     "@npmcli/arborist": "^9.1.2",
-    "@types/axios": "^0.14.4",
     "@types/jest": "^30.0.0",
-    "@types/node": "^20.0.0",
+    "@types/node": "^20.19.9",
     "@types/supertest": "^6.0.3",
     "axios-mock-adapter": "^2.1.0",
     "jest": "^30.0.5",

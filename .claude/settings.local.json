@@ -11,7 +11,14 @@
       "Bash(npm run test:unit:*)",
       "Bash(chmod:*)",
       "Bash(./scripts/security-scan.sh:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(mcp list:*)",
+      "Bash(pip install:*)",
+      "Bash(docker-compose build:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker-compose:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": []
   },

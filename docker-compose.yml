@@ -33,7 +33,3 @@ services:
 networks:
   mcp-network:
     driver: bridge
-
-# Optional: Add volume for persistent data if needed in the future
-# volumes:
-#   mcp-data:

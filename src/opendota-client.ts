@@ -1,5 +1,7 @@
-const axios = require('axios');
 import { logger, APIError, TimeoutError } from './logger.js';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const axios = require('axios');
 
 export interface Match {
   match_id: number;
